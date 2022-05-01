@@ -1,6 +1,8 @@
 import json
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 from .models import Product, Order, OrderElement
@@ -57,7 +59,7 @@ def product_list_api(request):
         'indent': 4,
     })
 
-
+@api_view(['POST'])
 def register_order(request):
     try:
         requested_order = json.loads(request.body.decode())
@@ -77,9 +79,9 @@ def register_order(request):
                 product=product,
                 quantity=quantity,
             )
-        return JsonResponse({}, status=200)
+        return Response({}, status=200)
     except ValueError:
-        return JsonResponse(
+        return Response(
             {'error': 'Invalid value was provided'},
             status=400
         )
