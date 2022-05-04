@@ -1,4 +1,5 @@
 import json
+import phonenumbers
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
@@ -82,29 +83,42 @@ def register_order(request):
                 for req_product in req_order['products']]):
             err_content = 'Invalid products items in the list was provided'
             raise ValueError
+        for field in ['firstname', 'lastname', 'phonenumber', 'address']:
+            if field not in req_order or \
+               not isinstance(req_order[field], str) or \
+               req_order[field] == '':
+                err_content = f'The {field} is needed'
+                raise ValueError
+        phone_number = phonenumbers.parse(req_order['phonenumber'])
+        if not phonenumbers.is_valid_number(phone_number):
+            err_content = 'The phonenumber is not valid'
+            raise ValueError
+        phone_number = phonenumbers.format_number(
+            phone_number, phonenumbers.PhoneNumberFormat.E164
+        )
         created_order = Order.objects.create(
             firstname=req_order['firstname'],
             lastname=req_order['lastname'],
-            phone_number=req_order['phonenumber'],
+            phone_number=phone_number,
             address=req_order['address'],
         )
         for req_product in req_order['products']:
             if isinstance(req_product['product'], str) and \
                not req_product['product'].isdigit():
                 err_content = 'The product id should be a digit'
-                raise
+                raise ValueError
             if isinstance(req_product['product'], (str, int)) and \
                Product.objects.filter(id=req_product['product']) \
                               .exists():
                 product_id = req_product['product']
                 product = Product.objects.get(id=product_id)
             else:
-                err_content = 'Non existent product was provided'
+                err_content = 'Non correct product id was provided'
                 raise ValueError
             if isinstance(req_product['quantity'], str) and \
                not req_product['quantity'].isdigit():
                 err_content = 'The quantity should be a digit'
-                raise
+                raise ValueError
             if isinstance(req_product['product'], (str, int)) and \
                int(req_product['quantity']) in range(1, 999):
                 quantity = req_product['quantity']
@@ -117,8 +131,14 @@ def register_order(request):
                 product=product,
                 quantity=quantity,
             )
-        return Response({}, status=200)
+        return Response({}, status=status.HTTP_200_OK)
     except ValueError:
+        return Response(
+            {'error': err_content},
+            status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+    except phonenumbers.NumberParseException as err:
+        err_content = str(err)
         return Response(
             {'error': err_content},
             status=status.HTTP_406_NOT_ACCEPTABLE
