@@ -133,7 +133,7 @@ class Order(models.Model):
         verbose_name='Фамилия',
         max_length=50,
     )
-    phone_number = PhoneNumberField(
+    phonenumber = PhoneNumberField(
         verbose_name='Номер телефона',
         db_index=True,
     )
@@ -165,7 +165,7 @@ class OrderElement(models.Model):
     )
     product = models.ForeignKey(
         Product,
-        related_name='elements',
+        related_name='products',
         verbose_name="продукт",
         on_delete=models.SET_DEFAULT,
         default="снят с продажи"
