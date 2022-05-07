@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,7 +17,7 @@ def banners_list_api(request):
             'title': 'Burger',
             'src': static('burger.jpg'),
             'text': 'Tasty Burger at your door step',
-        },
+        },  
         {
             'title': 'Spices',
             'src': static('food.jpg'),
@@ -68,7 +69,8 @@ class OrderElementSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
-    products = OrderElementSerializer(many=True, allow_empty=False)
+    products = OrderElementSerializer(many=True, allow_empty=False,
+                                      write_only=True)
 
     class Meta:
         model = Order
@@ -91,4 +93,4 @@ def register_order(request):
     order_elements = [OrderElement(order=created_order, **fields)
                       for fields in products_fields]
     OrderElement.objects.bulk_create(order_elements)
-    return Response({}, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_200_OK)
