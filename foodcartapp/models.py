@@ -154,8 +154,6 @@ class Order(models.Model):
     order.short_description = 'Заказ'
 
 
-
-
 class OrderElement(models.Model):
     order = models.ForeignKey(
         Order,
