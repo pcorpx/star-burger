@@ -95,9 +95,11 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = (Order.objects.all()
+    orders = (Order.objects.filter(status='UNPROCESSED')
                    .prefetch_related('elements__product')
                    .total())
+    for order in orders:
+        order.visual_status = order.get_status_display()
     return render(request, template_name='order_items.html', context={
         "order_items": orders
     })
