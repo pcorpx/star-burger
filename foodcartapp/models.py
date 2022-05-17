@@ -142,7 +142,12 @@ class Order(models.Model):
         (PROCESSED, 'Обработанный заказ'),
         (UNPROCESSED, 'Необработанный заказ')
       )
-
+    CASH = 'CASH'
+    EPAY = 'EPAY'
+    PAYMENT_TYPE = (
+        (CASH, 'Наличностью'),
+        (EPAY, 'Электронно')
+    )
     firstname = models.CharField(
         verbose_name='Имя',
         max_length=50,
@@ -164,6 +169,13 @@ class Order(models.Model):
         max_length=11,
         verbose_name='Статус заказа',
         default=UNPROCESSED,
+        db_index=True,
+    )
+    payment = models.CharField(
+        choices=PAYMENT_TYPE,
+        max_length=4,
+        verbose_name='Способ оплаты',
+        default=EPAY,
         db_index=True,
     )
     comment = models.TextField(

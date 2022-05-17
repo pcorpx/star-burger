@@ -100,6 +100,7 @@ def view_orders(request):
                    .total())
     for order in orders:
         order.visual_status = order.get_status_display()
+        order.visual_payment = order.get_payment_display()
     return render(request, template_name='order_items.html', context={
         "order_items": orders
     })
