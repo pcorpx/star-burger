@@ -1,3 +1,4 @@
+from tkinter.tix import Tree
 from django.db import models
 from django.db.models import F, Sum
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -171,11 +172,11 @@ class Order(models.Model):
         blank=True,
     )
     registered_at = models.DateTimeField(verbose_name='Зарегестрирован в',
-                                         default=timezone.now)
+                                         default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name='Согласован в',
-                                     null=True, blank=True)
+                                     null=True, blank=True, db_index=True)
     delivered_at = models.DateTimeField(verbose_name='Доставлен в',
-                                        null=True, blank=True)
+                                        null=True, blank=True, db_index=True)
     objects = OrderQuerySet.as_manager()
 
     class Meta:
