@@ -6,6 +6,21 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
 
 
+class RestaurantQuerySet(models.QuerySet):
+    def available(self, order):
+        available_restaurants = []
+        ordered_products = {element.product for element in
+                            order.elements.all()}
+
+        for restaurant in self:
+            available_products = {item.product for item in
+                                  restaurant.menu_items.all()
+                                  if item.availability == True}
+            if ordered_products.issubset(available_products):
+                available_restaurants.append(restaurant)
+        return available_restaurants
+
+
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -21,6 +36,8 @@ class Restaurant(models.Model):
         max_length=50,
         blank=True,
     )
+
+    objects = RestaurantQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'ресторан'
@@ -137,9 +154,11 @@ class OrderQuerySet(models.QuerySet):
 
 class Order(models.Model):
     PROCESSED = 'PROCESSED'
+    COOKING = 'COOKING'
     UNPROCESSED = 'UNPROCESSED'
     STATUS_TYPE = (
         (PROCESSED, 'Обработанный заказ'),
+        (COOKING, 'Готовится заказ'),
         (UNPROCESSED, 'Необработанный заказ')
       )
     CASH = 'CASH'
@@ -183,6 +202,14 @@ class Order(models.Model):
         max_length=200,
         blank=True,
     )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        verbose_name='Ресторан',
+        related_name='orders',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     registered_at = models.DateTimeField(verbose_name='Зарегестрирован в',
                                          default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name='Согласован в',
@@ -202,6 +229,10 @@ class Order(models.Model):
         return f"{self.lastname} {self.firstname} {self.address}"
     order.short_description = 'Заказ'
 
+    def save(self, *args, **kwargs):
+        if self.restaurant and self.status == 'UNPROCESSED':
+            self.status = 'COOKING'
+        super().save(*args, **kwargs)
 
 class OrderElement(models.Model):
     order = models.ForeignKey(
