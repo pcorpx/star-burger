@@ -1,4 +1,3 @@
-from tkinter.tix import Tree
 from django.db import models
 from django.db.models import F, Sum
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -15,9 +14,9 @@ class RestaurantQuerySet(models.QuerySet):
         for restaurant in self:
             available_products = {item.product for item in
                                   restaurant.menu_items.all()
-                                  if item.availability == True}
+                                  if item.availability}
             if ordered_products.issubset(available_products):
-                available_restaurants.append(restaurant)
+                available_restaurants.append(restaurant.__dict__)
         return available_restaurants
 
 
@@ -36,7 +35,8 @@ class Restaurant(models.Model):
         max_length=50,
         blank=True,
     )
-
+    lat = models.FloatField(null=True, verbose_name='Широта')
+    lon = models.FloatField(null=True, verbose_name='Долгота')
     objects = RestaurantQuerySet.as_manager()
 
     class Meta:

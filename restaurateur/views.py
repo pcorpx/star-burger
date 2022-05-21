@@ -1,3 +1,4 @@
+import requests
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -5,9 +6,30 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from geopy import distance
+
+from foodcartapp.models import Product, Restaurant, Order
 
 
-from foodcartapp.models import RestaurantMenuItem, Product, Restaurant, Order
+def fetch_coordinates(address, apikey=settings.GEOCODER_TOKEN):
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    response = requests.get(base_url, params={
+        "geocode": address,
+        "apikey": apikey,
+        "format": "json",
+    })
+    response.raise_for_status()
+    found_places = (response.json()['response']['GeoObjectCollection']
+                    ['featureMember'])
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lat, lon
+
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -72,9 +94,11 @@ def view_products(request):
 
         availability = {
             **default_availability,
-            **{item.restaurant_id: item.availability for item in product.menu_items.all()},
+            **{item.restaurant_id: item.availability for item
+               in product.menu_items.all()},
         }
-        orderer_availability = [availability[restaurant.id] for restaurant in restaurants]
+        orderer_availability = [availability[restaurant.id] for restaurant
+                                in restaurants]
 
         products_with_restaurants.append(
             (product, orderer_availability)
@@ -96,12 +120,28 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = (Order.objects.filter(status__in=['COOKING', 'UNPROCESSED'])
+                   .select_related('restaurant')
                    .prefetch_related('elements__product')
                    .total().order_by('-status', 'id'))
     restaurants = Restaurant.objects.prefetch_related('menu_items__product')
     for order in orders:
         if order.restaurant is None:
-            order.restaurants = restaurants.available(order)
+            try:
+                client_coords = fetch_coordinates(order.address)
+            except requests.exceptions.RequestException:
+                client_coords = None
+            order.restaurants = [dict(restaurant) for restaurant in
+                                 restaurants.available(order)]
+            for restaurant in order.restaurants:
+                restaurant_coords = restaurant['lat'], restaurant['lon']
+                try:
+                    restaurant['distance'] = distance.distance(
+                        restaurant_coords, client_coords
+                    ).km
+                except Exception:
+                    restaurant['distance'] = None
+            order.restaurants.sort(key=lambda restaurant:
+                                   restaurant['distance'])
         order.visual_status = order.get_status_display()
         order.visual_payment = order.get_payment_display()
     return render(request, template_name='order_items.html', context={

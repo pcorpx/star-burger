@@ -1,10 +1,10 @@
-from environs import Env
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 from django.shortcuts import redirect
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.conf import settings
 
 from .models import Product
 from .models import ProductCategory
@@ -12,10 +12,6 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order, OrderElement
 
-
-env = Env()
-env.read_env()
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
@@ -33,6 +29,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         'name',
         'address',
         'contact_phone',
+        'lat',
+        'lon'
     ]
     inlines = [
         RestaurantMenuItemInline
@@ -133,7 +131,7 @@ class OrderAdmin(admin.ModelAdmin):
         res = super(OrderAdmin, self).response_post_save_change(request, obj)
         if ("next" in request.GET and
            url_has_allowed_host_and_scheme(
-               request.GET['next'], ALLOWED_HOSTS
+               request.GET['next'], settings.ALLOWED_HOSTS
                )):
             return redirect(request.GET['next'])
         else:
