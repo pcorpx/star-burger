@@ -1,9 +1,12 @@
+import requests
 from django.db import models
 from django.db.models import F, Sum
 from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
 
+from locations.locator import fetch_coordinates
+from locations.models import Location
 
 class RestaurantQuerySet(models.QuerySet):
     def available(self, order):
@@ -232,6 +235,18 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if self.restaurant and self.status == 'UNPROCESSED':
             self.status = 'COOKING'
+        if self.address:
+            try:
+                lat, lon = fetch_coordinates(self.address)
+                Location.objects.create(
+                    address=self.address,
+                    lat=lat,
+                    lon=lon
+                )
+            except requests.exceptions.RequestException:
+                pass
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
 class OrderElement(models.Model):
