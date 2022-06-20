@@ -197,7 +197,6 @@ class Order(models.Model):
         choices=PAYMENT_TYPE,
         max_length=4,
         verbose_name='Способ оплаты',
-        default=EPAY,
         db_index=True,
     )
     comment = models.TextField(
