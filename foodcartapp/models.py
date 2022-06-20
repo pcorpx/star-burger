@@ -201,7 +201,6 @@ class Order(models.Model):
     )
     comment = models.TextField(
         'Комментарий',
-        max_length=200,
         blank=True,
     )
     restaurant = models.ForeignKey(
