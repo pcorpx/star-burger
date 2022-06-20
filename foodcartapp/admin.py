@@ -122,7 +122,7 @@ class OrderAdmin(admin.ModelAdmin):
     fields = ['address', 'lastname', 'firstname', 'phonenumber', 'status',
               'payment', 'comment', 'registered_at', 'called_at',
               'delivered_at', 'restaurant']
-    list_display = ['order']
+    list_display = ['display_order']
     inlines = [
         OrderElementInline
     ]

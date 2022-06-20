@@ -226,9 +226,9 @@ class Order(models.Model):
     def __str__(self):
         return f"Заказ № {self.id}"
 
-    def order(self):
+    def display_order(self):
         return f"{self.lastname} {self.firstname} {self.address}"
-    order.short_description = 'Заказ'
+    display_order.short_description = 'Заказ'
 
     def save(self, *args, **kwargs):
         if self.restaurant and self.status == 'UNPROCESSED':
