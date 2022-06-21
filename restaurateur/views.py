@@ -135,28 +135,29 @@ def view_orders(request):
         existed_locations.extend(new_locations)
     for order in orders:
         order.client_coords = None
-        if not order.restaurant:
-            for location in existed_locations:
-                if location['address'] == order.address:
-                    order.client_coords = location['lat'], location['lon']
-            order.restaurants = [copy.copy(restaurant) for restaurant in
-                                 restaurants.available(order)]
-            for restaurant in order.restaurants:
-                restaurant_coords = restaurant.lat, restaurant.lon
-                if all(coord for coord in order.client_coords) and \
-                   all(coord for coord in restaurant_coords):
-                    try:
-                        restaurant.distance = distance.distance(
-                            restaurant_coords, order.client_coords
-                        ).km
-                    except Exception:
-                        restaurant.distance = None
-                else:
+        if order.restaurant:
+            continue
+        for location in existed_locations:
+            if location['address'] == order.address:
+                order.client_coords = location['lat'], location['lon']
+        order.restaurants = [copy.copy(restaurant) for restaurant in
+                                restaurants.available(order)]
+        for restaurant in order.restaurants:
+            restaurant_coords = restaurant.lat, restaurant.lon
+            if all(coord for coord in order.client_coords) and \
+                all(coord for coord in restaurant_coords):
+                try:
+                    restaurant.distance = distance.distance(
+                        restaurant_coords, order.client_coords
+                    ).km
+                except Exception:
                     restaurant.distance = None
-            if all(restaurant.distance for restaurant
-                   in order.restaurants):
-                order.restaurants.sort(key=lambda restaurant:
-                                       restaurant.distance)
+            else:
+                restaurant.distance = None
+        if all(restaurant.distance for restaurant
+                in order.restaurants):
+            order.restaurants.sort(key=lambda restaurant:
+                                    restaurant.distance)
         order.visual_status = order.get_status_display()
         order.visual_payment = order.get_payment_display()
     return render(request, template_name='order_items.html', context={
