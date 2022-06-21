@@ -6,13 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     def copy_prices_to_orders(apps, schema_editor):
-        #Product = apps.get_model('foodcartapp', 'Product')
         OrderElement = apps.get_model('foodcartapp', 'OrderElement')
         order_elements = OrderElement.objects.all()
         for order_element in order_elements.iterator():
-            #product = Product.objects.filter(id=order_element.product)
-            #if product.exists():
-            #    order_element.price = order_element.product.first().price
             order_element.price = order_element.product.price
             order_element.save()
 
