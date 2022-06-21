@@ -124,6 +124,10 @@ def view_orders(request):
                     lat=lat,
                     lon=lon
                 ))
+            else:
+                new_locations.append(
+                    Location(address=address)
+                )
         except requests.exceptions.RequestException:
             pass
     if new_locations:
