@@ -135,7 +135,7 @@ def view_orders(request):
         existed_locations.extend(new_locations)
     for order in orders:
         order.client_coords = None
-        if order.restaurant is None:
+        if not order.restaurant:
             for location in existed_locations:
                 if location['address'] == order.address:
                     order.client_coords = location['lat'], location['lon']
