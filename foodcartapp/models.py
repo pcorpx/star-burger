@@ -238,7 +238,7 @@ class OrderElement(models.Model):
     )
     product = models.ForeignKey(
         Product,
-        related_name='products',
+        related_name='order_elements',
         verbose_name="продукт",
         null=True,
         on_delete=models.SET_NULL,
