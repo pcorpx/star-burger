@@ -17,7 +17,7 @@ class RestaurantQuerySet(models.QuerySet):
                                   restaurant.menu_items.all()
                                   if item.availability}
             if ordered_products.issubset(available_products):
-                available_restaurants.append(restaurant.__dict__)
+                available_restaurants.append(restaurant)
         return available_restaurants
 
 

@@ -1,4 +1,6 @@
 import requests
+import copy
+
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -133,24 +135,24 @@ def view_orders(request):
             for location in existed_locations:
                 if location['address'] == order.address:
                     order.client_coords = location['lat'], location['lon']
-            order.restaurants = [dict(restaurant) for restaurant in
+            order.restaurants = [copy.copy(restaurant) for restaurant in
                                  restaurants.available(order)]
             for restaurant in order.restaurants:
-                restaurant_coords = restaurant['lat'], restaurant['lon']
+                restaurant_coords = restaurant.lat, restaurant.lon
                 if all(coord for coord in order.client_coords) and \
                    all(coord for coord in restaurant_coords):
                     try:
-                        restaurant['distance'] = distance.distance(
+                        restaurant.distance = distance.distance(
                             restaurant_coords, order.client_coords
                         ).km
                     except Exception:
-                        restaurant['distance'] = None
+                        restaurant.distance = None
                 else:
-                    restaurant['distance'] = None
-            if all(restaurant['distance'] for restaurant
+                    restaurant.distance = None
+            if all(restaurant.distance for restaurant
                    in order.restaurants):
                 order.restaurants.sort(key=lambda restaurant:
-                                       restaurant['distance'])
+                                       restaurant.distance)
         order.visual_status = order.get_status_display()
         order.visual_payment = order.get_payment_display()
     return render(request, template_name='order_items.html', context={
