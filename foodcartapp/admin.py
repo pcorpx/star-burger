@@ -131,7 +131,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     def response_post_save_change(self, request, obj):
-        res = super(OrderAdmin, self).response_post_save_change(request, obj)
+        res = super().response_post_save_change(request, obj)
         location, created = Location.objects.get_or_create(
             address=obj.address,
         )
