@@ -18,4 +18,4 @@ class Location(models.Model):
         verbose_name_plural = 'Места'
 
     def __str__(self):
-        return f"{self.address}"
+        return self.address
