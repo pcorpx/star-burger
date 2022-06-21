@@ -3,14 +3,15 @@
 from django.db import migrations
 
 
-class Migration(migrations.Migration):
+def copy_prices_to_orders(apps, schema_editor):
+    OrderElement = apps.get_model('foodcartapp', 'OrderElement')
+    order_elements = OrderElement.objects.filter(price=None)
+    for order_element in order_elements.iterator():
+        order_element.price = order_element.product.price
+        order_element.save()
 
-    def copy_prices_to_orders(apps, schema_editor):
-        OrderElement = apps.get_model('foodcartapp', 'OrderElement')
-        order_elements = OrderElement.objects.filter(price=None)
-        for order_element in order_elements.iterator():
-            order_element.price = order_element.product.price
-            order_element.save()
+
+class Migration(migrations.Migration):
 
     dependencies = [
         ('foodcartapp', '0043_alter_orderelement_price'),
