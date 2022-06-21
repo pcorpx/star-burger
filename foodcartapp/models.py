@@ -240,8 +240,8 @@ class OrderElement(models.Model):
         Product,
         related_name='products',
         verbose_name="продукт",
-        on_delete=models.SET_DEFAULT,
-        default="снят с продажи"
+        null=True,
+        on_delete=models.SET_NULL,
     )
     price = models.DecimalField(
         'цена',
