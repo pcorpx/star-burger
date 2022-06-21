@@ -1,3 +1,5 @@
+import requests
+
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
@@ -11,7 +13,8 @@ from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order, OrderElement
-
+from locations.models import Location
+from locations.locator import fetch_coordinates
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
@@ -129,6 +132,18 @@ class OrderAdmin(admin.ModelAdmin):
 
     def response_post_save_change(self, request, obj):
         res = super(OrderAdmin, self).response_post_save_change(request, obj)
+        location, created = Location.objects.get_or_create(
+            address=obj.address,
+        )
+        if created:
+            try:
+                location.lat, location.lon = fetch_coordinates(location.address)
+                location.save()
+            except requests.exceptions.RequestException:
+                    pass
+            except Exception:
+                pass
+
         if ("next" in request.GET and
            url_has_allowed_host_and_scheme(
                request.GET['next'], settings.ALLOWED_HOSTS

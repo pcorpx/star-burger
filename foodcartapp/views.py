@@ -1,3 +1,5 @@
+import requests
+
 from django.http import JsonResponse
 from django.templatetags.static import static
 from django.views.decorators.csrf import csrf_exempt
@@ -8,6 +10,8 @@ from rest_framework.serializers import ModelSerializer
 from django.db import transaction
 
 from .models import Product, Order, OrderElement
+from locations.models import Location
+from locations.locator import fetch_coordinates
 
 
 def banners_list_api(request):
@@ -90,6 +94,18 @@ def register_order(request):
         phonenumber=serializer.validated_data['phonenumber'],
         address=serializer.validated_data['address'],
     )
+    location, created = Location.objects.get_or_create(
+        address=created_order.address,
+    )
+    if created:
+        try:
+            location.lat, location.lon = fetch_coordinates(location.address)
+            location.save()
+        except requests.exceptions.RequestException:
+                pass
+        except Exception:
+            pass
+
     products_fields = serializer.validated_data['products']
     order_elements = [OrderElement(order=created_order,
                       price=Product.objects.get(pk=fields['product'].id).price,

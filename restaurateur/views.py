@@ -117,11 +117,11 @@ def view_orders(request):
             coords = fetch_coordinates(address)
             if coords:
                 lat, lon = coords
-                new_locations.append({
-                    'address': address,
-                    'lat': lat,
-                    'lon': lon
-                })
+                new_locations.append(Location(
+                    address=address,
+                    lat=lat,
+                    lon=lon
+                ))
         except requests.exceptions.RequestException:
             pass
     if new_locations:
