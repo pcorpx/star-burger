@@ -104,7 +104,7 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = (Order.objects.filter(status__in=['COOKING', 'UNPROCESSED'])
-                   .select_related('restaurant')
+                   .select_related('assigned_restaurant')
                    .prefetch_related('elements__product')
                    .total().order_by('-status', 'id'))
     restaurants = Restaurant.objects.prefetch_related('menu_items__product')
@@ -135,7 +135,7 @@ def view_orders(request):
         existed_locations.extend(new_locations)
     for order in orders:
         order.client_coords = None
-        if order.restaurant:
+        if order.assigned_restaurant:
             continue
         for location in existed_locations:
             if location['address'] == order.address:

@@ -26,7 +26,7 @@ class Restaurant(models.Model):
     name = models.CharField(
         'название',
         max_length=50,
-        index_db=True,
+        db_index=True,
     )
     address = models.CharField(
         'адрес',
@@ -203,7 +203,7 @@ class Order(models.Model):
         'Комментарий',
         blank=True,
     )
-    restaurant = models.ForeignKey(
+    assigned_restaurant = models.ForeignKey(
         Restaurant,
         verbose_name='Ресторан',
         related_name='orders',
