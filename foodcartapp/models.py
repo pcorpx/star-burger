@@ -1,3 +1,4 @@
+from operator import index
 import requests
 from django.db import models
 from django.db.models import F, Sum
@@ -24,7 +25,8 @@ class RestaurantQuerySet(models.QuerySet):
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
-        max_length=50
+        max_length=50,
+        index_db=True,
     )
     address = models.CharField(
         'адрес',
