@@ -115,21 +115,21 @@ def view_orders(request):
     new_addresses = addresses - existed_addresses
     new_locations = []
     for address in new_addresses:
-        try:
-            coords = fetch_coordinates(address)
-            if coords:
-                lat, lon = coords
-                new_locations.append(Location(
-                    address=address,
-                    lat=lat,
-                    lon=lon
-                ))
-            else:
-                new_locations.append(
-                    Location(address=address)
-                )
-        except requests.exceptions.RequestException:
-            pass
+        coords = fetch_coordinates(address)
+        if coords:
+            lat, lon = coords
+            new_locations.append(Location(
+                address=address,
+                lat=lat,
+                lon=lon
+            ))
+        else:
+            new_locations.append(
+                Location(address=address),
+                lat=None,
+                lon=None
+            )
+
     if new_locations:
         Location.objects.bulk_create(new_locations)
         existed_locations.extend(new_locations)
@@ -150,7 +150,7 @@ def view_orders(request):
                     restaurant.distance = distance.distance(
                         restaurant_coords, order.client_coords
                     ).km
-                except Exception:
+                except ValueError:
                     restaurant.distance = None
             else:
                 restaurant.distance = None

@@ -98,14 +98,9 @@ def register_order(request):
         address=created_order.address,
     )
     if created:
-        try:
-            coords = fetch_coordinates(location.address)
-            location.lat, location.lon = coords if coords else None, None
-            location.save()
-        except requests.exceptions.RequestException:
-                pass
-        except Exception:
-            pass
+        coords = fetch_coordinates(location.address)
+        location.lat, location.lon = coords if coords else None, None
+        location.save()
 
     products_fields = serializer.validated_data['products']
     order_elements = [OrderElement(order=created_order,
