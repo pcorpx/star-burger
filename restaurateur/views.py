@@ -108,11 +108,11 @@ def view_orders(request):
                    .prefetch_related('elements__product')
                    .count_total_sums().order_by('-status', 'id'))
     restaurants = Restaurant.objects.prefetch_related('menu_items__product')
-    addresses = {order.address for order in orders}
-    existed_locations = list(Location.objects.filter(address__in=addresses)
+    customer_addresses = {order.address for order in orders}
+    existed_locations = list(Location.objects.filter(address__in=customer_addresses)
                                              .values())
     existed_addresses = {location['address'] for location in existed_locations}
-    new_addresses = addresses - existed_addresses
+    new_addresses = customer_addresses - existed_addresses
     new_locations = []
     for address in new_addresses:
         coords = fetch_coordinates(address)
