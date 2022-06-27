@@ -137,7 +137,8 @@ class OrderAdmin(admin.ModelAdmin):
         )
         if created:
             try:
-                location.lat, location.lon = fetch_coordinates(location.address)
+                coords = fetch_coordinates(location.address)
+                location.lat, location.lon = coords if coords else None, None
                 location.save()
             except requests.exceptions.RequestException:
                     pass
