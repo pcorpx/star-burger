@@ -106,7 +106,7 @@ def view_orders(request):
     orders = (Order.objects.filter(status__in=['COOKING', 'UNPROCESSED'])
                    .select_related('assigned_restaurant')
                    .prefetch_related('elements__product')
-                   .total().order_by('-status', 'id'))
+                   .count_total_sums().order_by('-status', 'id'))
     restaurants = Restaurant.objects.prefetch_related('menu_items__product')
     addresses = {order.address for order in orders}
     existed_locations = list(Location.objects.filter(address__in=addresses)
