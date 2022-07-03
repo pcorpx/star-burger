@@ -129,7 +129,6 @@ def view_orders(request):
                 lat=None,
                 lon=None
             )
-
     if new_locations:
         Location.objects.bulk_create(new_locations)
         existed_locations.extend(new_locations)
