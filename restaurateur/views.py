@@ -109,9 +109,14 @@ def view_orders(request):
                    .count_total_sums().order_by('-status', 'id'))
     restaurants = Restaurant.objects.prefetch_related('menu_items__product')
     customer_addresses = {order.address for order in orders}
-    existed_locations = list(Location.objects.filter(address__in=customer_addresses)
-                                             .values())
-    existed_addresses = {location['address'] for location in existed_locations}
+    existed_locations = (
+        Location.objects.filter(address__in=customer_addresses).values()
+    )
+    existed_locations = {
+        location['address']: (location['lat'], location['lon'])
+        for location in existed_locations
+    }
+    existed_addresses = existed_locations.keys()
     new_addresses = customer_addresses - existed_addresses
     new_locations = []
     for address in new_addresses:
@@ -136,9 +141,8 @@ def view_orders(request):
         order.client_coords = None
         if order.assigned_restaurant:
             continue
-        for location in existed_locations:
-            if location['address'] == order.address:
-                order.client_coords = location['lat'], location['lon']
+        if order.address in existed_addresses:
+            order.client_coords = existed_locations[order.address]
         order.restaurants = [copy.copy(restaurant) for restaurant in
                                 restaurants.available(order)]
         for restaurant in order.restaurants:
