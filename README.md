@@ -168,8 +168,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `GEOCODER_TOKEN` - токен для доступа к Yandex geocoder API
 - `ROLLBAR_ENV` - значение 'development' для режима разработки или 'production' для боевого режима
 - `ROLLBAR_TOKEN` - токен для доступ к Rollbar [см. документацию Rollbar](https://rollbar.com/platforms/django-error-tracking/)
-- `DB_PASSWORD` - значение пароля для доступа к базе данных PostgreSql под учетной записью staruser
-
+- `DATABASE_URL` - URL для подключения к БД PostgreSQL вида postgres://staruser:password@localhost/star-burger-db
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
