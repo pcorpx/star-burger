@@ -54,7 +54,30 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
+Установите PostgreSQL:
+```sh
+sudo apt-get update
+sudo apt-get install python-pip python3-dev libpq-dev postgresql postgresql-contrib
+```
+Создайте базу данных:
+```sh
+sudo su - postgres
+psql
+CREATE DATABASE star-burger-db;
+```
+
+Создайте пользователя для доступа к базе данных и предоставьте ему необходимые права:
+```sh
+CREATE USER staruser WITH PASSWORD 'password';
+ALTER ROLE staruser SET client_encoding TO 'utf8';
+ALTER ROLE staruser SET default_transaction_isolation TO 'read committed';
+ALTER ROLE staruser SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE star-burger-db TO staruser;
+\q
+exit
+```
+
+Создайте структуру базы данных командой:
 
 ```sh
 python manage.py migrate
@@ -143,6 +166,9 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте. Не стоит использовать значение по-умолчанию, **замените на своё**.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `GEOCODER_TOKEN` - токен для доступа к Yandex geocoder API
+- `ROLLBAR_ENV` - значение 'development' для режима разработки или 'production' для боевого режима
+- `ROLLBAR_TOKEN` - токен для доступ к Rollbar [см. документацию Rollbar](https://rollbar.com/platforms/django-error-tracking/)
+- `DB_PASSWORD` - значение пароля для доступа к базе данных PostgreSql под учетной записью staruser
 
 ## Цели проекта
 
