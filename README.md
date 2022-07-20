@@ -169,6 +169,33 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ROLLBAR_ENV` - значение 'development' для режима разработки или 'production' для боевого режима
 - `ROLLBAR_TOKEN` - токен для доступ к Rollbar [см. документацию Rollbar](https://rollbar.com/platforms/django-error-tracking/)
 - `DATABASE_URL` - URL для подключения к БД PostgreSQL вида postgres://staruser:password@localhost/star-burger-db
+
+## Автоматическое обновление кода на сервере
+
+Используйте следующий bash скрипт на сервере для быстрого обновления кода
+
+```sh
+#!/bin/bash
+
+set -e
+
+git -C /opt/star-burger pull
+/opt/star-burger/myvenv/bin/pip3 install -r /opt/star-burger/requirements.txt
+npm ci --dev --prefix /opt/star-burger
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py collectstatic --noinput
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py makemigrations
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py migrate
+systemctl restart star-burger-web.target
+systemctl reload nginx
+echo "Deploy has successefully finished"
+
+```
+Располагается в каталоге /root, где его можно запустить
+
+```sh
+./deploy_star_burger.sh
+``` 
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
