@@ -9,4 +9,4 @@ phonenumbers==8.12.47
 geopy==2.2.0
 Pillow==9.2.0
 rollbar==0.16.3
-psycopg2=2.9.3
+psycopg2==2.9.3
