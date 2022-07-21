@@ -187,6 +187,7 @@ npm ci --dev --prefix /opt/star-burger
 /opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py migrate
 systemctl restart star-burger-web.target
 systemctl reload nginx
+http POST https://api.rollbar.com/api/1/deploy X-Rollbar-Access-Token:$ROLLBAR_TOKEN environment=$ROLLBAR_ENV revision=$(git rev-parse --verify HEAD) rollbar_username=pcorpx comment="new deploy" status=succeeded
 echo "Deploy has successefully finished"
 
 ```
