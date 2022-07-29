@@ -69,6 +69,7 @@ ROLLBAR = {
     'access_token': env.str('ROLLBAR_TOKEN'),
     'environment': env.str('ROLLBAR_ENV', 'production'),
     'root': BASE_DIR,
+    'enabled': True,
 }
 
 rollbar.init(**ROLLBAR)
