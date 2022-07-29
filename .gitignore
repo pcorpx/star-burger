@@ -148,4 +148,3 @@ cython_debug/
 .parcel-cache/
 
 #Bash scripts
-*.sh
