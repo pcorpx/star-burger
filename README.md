@@ -4,6 +4,7 @@
 
 ![скриншот сайта](https://dvmn.org/filer/canonical/1594651635/686/)
 
+Вы можете увидеть работующую версию сайта по адресу: https://starburger.cos.as/
 
 Сеть Star Burger объединяет несколько ресторанов, действующих под единой франшизой. У всех ресторанов одинаковое меню и одинаковые цены. Просто выберите блюдо из меню на сайте и укажите место доставки. Мы сами найдём ближайший к вам ресторан, всё приготовим и привезём.
 
@@ -54,7 +55,30 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
+Установите PostgreSQL:
+```sh
+sudo apt-get update
+sudo apt-get install python-pip python3-dev libpq-dev postgresql postgresql-contrib
+```
+Создайте базу данных:
+```sh
+sudo su - postgres
+psql
+CREATE DATABASE star-burger-db;
+```
+
+Создайте пользователя для доступа к базе данных и предоставьте ему необходимые права:
+```sh
+CREATE USER staruser WITH PASSWORD 'password';
+ALTER ROLE staruser SET client_encoding TO 'utf8';
+ALTER ROLE staruser SET default_transaction_isolation TO 'read committed';
+ALTER ROLE staruser SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE star-burger-db TO staruser;
+\q
+exit
+```
+
+Создайте структуру базы данных командой:
 
 ```sh
 python manage.py migrate
@@ -143,6 +167,36 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте. Не стоит использовать значение по-умолчанию, **замените на своё**.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `GEOCODER_TOKEN` - токен для доступа к Yandex geocoder API
+- `ROLLBAR_ENV` - значение 'development' для режима разработки или 'production' для боевого режима
+- `ROLLBAR_TOKEN` - токен для доступ к Rollbar [см. документацию Rollbar](https://rollbar.com/platforms/django-error-tracking/)
+- `DATABASE_URL` - URL для подключения к БД PostgreSQL вида postgres://staruser:password@localhost/star-burger-db
+
+## Автоматическое обновление кода на сервере
+
+Используйте следующий bash скрипт на сервере для быстрого обновления кода
+
+```sh
+#!/bin/bash
+
+set -e
+
+git -C /opt/star-burger pull
+/opt/star-burger/myvenv/bin/pip3 install -r /opt/star-burger/requirements.txt
+npm ci --dev --prefix /opt/star-burger
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py collectstatic --noinput
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py makemigrations
+/opt/star-burger/myvenv/bin/python3.10 /opt/star-burger/manage.py migrate
+systemctl restart star-burger-web.target
+systemctl reload nginx
+http POST https://api.rollbar.com/api/1/deploy X-Rollbar-Access-Token:$ROLLBAR_TOKEN environment=$ROLLBAR_ENV revision=$(git rev-parse --verify HEAD) rollbar_username=pcorpx comment="new deploy" status=succeeded
+echo "Deploy has successefully finished"
+
+```
+Располагается в каталоге /root, где его можно запустить
+
+```sh
+./deploy_star_burger.sh
+``` 
 
 ## Цели проекта
 
