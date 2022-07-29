@@ -1,6 +1,7 @@
 import os
 
 import dj_database_url
+import rollbar
 
 from environs import Env
 
@@ -69,7 +70,7 @@ ROLLBAR = {
     'environment': env.str('ROLLBAR_ENV', 'production'),
     'root': BASE_DIR,
 }
-import rollbar
+
 rollbar.init(**ROLLBAR)
 
 TEMPLATES = [
